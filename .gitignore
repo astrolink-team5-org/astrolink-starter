@@ -2,6 +2,10 @@ __pycache__/
 *.pyc
 instance/
 .env
+.env.*
+!.env.example
+
 *.db
 .DS_Store
 venv/
+
