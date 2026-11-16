@@ -9,9 +9,9 @@ Notice what this does NOT do (these are things teams build):
   - expire sessions
 """
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import db, User
+from app.models import AuditEvent, User, db
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -38,15 +38,40 @@ def login():
     if request.method == "POST":
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
-
         user = User.query.filter_by(username=username).first()
 
-        if user and user.check_password(password):
-            login_user(user)
+        # add login event to audit log
+        if user is None:
+            reason_code = "unknown_username"
+        elif not user.check_password(password):
+            reason_code = "invalid_password"
+        elif user.employment_status == "left":
+            reason_code = "account_inactive"
+        elif not login_user(user):
+            reason_code = "account_inactive"
+        else: # successful login
+            session["session_version"] = user.session_version
+            record_audit_event(
+                event_type="login",
+                outcome="success",
+                actor_user_id=user.id
+            )
             flash(f"Logged in as {user.display_name or user.username}.", "success")
             return redirect(url_for("auth.home"))
 
-        flash("Invalid username or password.", "danger")
+        record_audit_event(
+            event_type = "login",
+            outcome = "denied",
+            target_user_id=user.id if user is not None else None,
+            reason_code=reason_code,
+        )
+        if reason_code == "account_inactive":
+            flash(
+                "Your account is inactive. Please contact an administrator to reactivate it.",
+                "danger",
+            )
+        else:
+            flash("Invalid username or password.", "danger")
 
     return render_template("login.html")
 
@@ -79,5 +104,21 @@ def register():
 @auth_bp.route("/logout")
 @login_required
 def logout():
+    user_id = current_user.id
     logout_user()
+    record_audit_event(event_type="logout", outcome="success", actor_user_id=user_id)
     return redirect(url_for("auth.login"))
+
+
+def record_audit_event(event_type, outcome, *, actor_user_id=None, target_user_id=None, reason_code=None):
+    """Record an audit event in the database."""
+    event = AuditEvent(
+        event_type=event_type,
+        outcome=outcome,
+        actor_user_id=actor_user_id,
+        target_user_id=target_user_id,
+        reason_code=reason_code,
+        ip_address=request.remote_addr,
+    )
+    db.session.add(event)
+    db.session.commit()

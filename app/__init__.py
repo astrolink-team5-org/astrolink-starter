@@ -4,7 +4,7 @@ You shouldn't need to change this file.
 """
 
 import os
-from flask import Flask
+from flask import Flask, flash, session
 from flask_login import LoginManager
 from app.models import db, bcrypt, User
 
@@ -23,10 +23,23 @@ def create_app():
 
     login_manager = LoginManager()
     login_manager.login_view = "auth.login"
+    login_manager.login_message = None
     login_manager.init_app(app)
 
     @login_manager.user_loader
     def load_user(user_id):
+        user = db.session.get(User, int(user_id))
+
+        # If the user get kick out, we want to make sure they can't use their old session to access the app.
+        if user and user.employment_status == "left":
+            session.clear()  # Clear the session to log the user out
+            flash("Your account has been deactivated. Please contact an administrator to reactivate it.", "danger")
+            return None
+        if session.get("session_version") != user.session_version:
+            session.clear()
+            flash("Your session has expired. Please log in again.", "danger")
+            return None
+        
         return db.session.get(User, int(user_id))
 
     # Auth routes (login, register, logout) — provided for you
