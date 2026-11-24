@@ -15,7 +15,9 @@ who is sending the command, doesn't ask for approval, and doesn't
 write to the command log. Adding those is YOUR job.
 """
 
-from app.models import db
+from flask_login import current_user
+
+from app.models import CommandLog, db
 
 # Every command an operator can send.
 # "risk" is how bad it is if this command is sent by mistake or by an attacker.
@@ -73,7 +75,7 @@ COMMANDS = {
 MIN_SAFE_ALTITUDE_KM = 400.0
 
 
-def execute_command(satellite, command_type, parameter=None):
+def execute_command(satellite, command_type, parameter=None, user_id=None):
     """
     Apply a command to a satellite and save the change.
     Returns a human-readable result string.
@@ -135,6 +137,15 @@ def execute_command(satellite, command_type, parameter=None):
         satellite.subscribers_served = 0
         result = f"{name} deorbit started. This cannot be reversed."
 
+    db.session.add( CommandLog(
+        satellite_id=satellite.id,
+        user_id=user_id,
+        command_type=command_type,
+        parameter=p or None,
+        description=result,
+        status="executed",
+    ))
+    
     db.session.commit()
     return result
 

@@ -6,5 +6,4 @@ instance/
 !.env.example
 *.db
 .DS_Store
-venv/
-
+.venv/

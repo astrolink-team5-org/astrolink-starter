@@ -33,9 +33,9 @@ from app import create_app
 from app.models import Satellite
 from app.simulator import COMMANDS, execute_command
 
-SHARED_PASSWORD = "astrolink2024"  # everyone on the ops team knows this
+# SHARED_PASSWORD = "astrolink2024"  # everyone on the ops team knows this
 
-
+'''
 def main():
     if len(sys.argv) < 3:
         print("Usage: python legacy/send_command.py <SATELLITE> <COMMAND> [PARAMETER]")
@@ -61,7 +61,11 @@ def main():
             print(f"Error: {e}")
             sys.exit(1)
         # Notice: nothing is logged. Nobody will ever know who ran this.
-
+'''
 
 if __name__ == "__main__":
+    raise SystemExit(
+        "Legacy command script is disabled. "
+        "Sign in to the web app with your individual account."
+    )
     main()

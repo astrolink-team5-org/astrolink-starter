@@ -44,6 +44,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128), nullable=False)
     display_name = db.Column(db.String(120))
     job_title = db.Column(db.String(50))  # display label only, NOT a permission
+    permissions = db.Column(db.String(50), default="visitor") # options are visitor, junior, midlevel, senior, or admin
     employment_status = db.Column(db.String(20), default="employed")  # "employed" or "left"
     created_at = db.Column(db.DateTime, default=utcnow)
     session_version = db.Column(db.Integer, nullable=False, server_default="0")

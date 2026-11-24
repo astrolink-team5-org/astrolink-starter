@@ -1,0 +1,12 @@
+.command_tabs {
+    background-color: white;
+    color: black;
+    padding: 2vw 2vw;
+    margin: 1vw 1vw;
+    border-radius: 5px;
+}
+
+.command_tabs input {
+    background-color: white;
+    color: black;
+}
