@@ -22,7 +22,7 @@ def fmt(ts):
 def users():
     print("USERS")
     for u in User.query.order_by(User.id):
-        print(f"  {u.username:<10} {u.display_name:<17} {u.job_title:<20} {u.employment_status}")
+        print(f"  {u.username:<10} {u.display_name:<17} {u.job_title:<20} {u.permissions:<20} {u.employment_status}")
 
 
 def satellites():

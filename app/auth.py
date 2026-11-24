@@ -9,9 +9,9 @@ Notice what this does NOT do (these are things teams build):
   - expire sessions
 """
 
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, abort
 from flask_login import login_user, logout_user, login_required, current_user
-from app.models import AuditEvent, User, db
+from app.models import AuditEvent, User, db, Satellite
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -19,9 +19,10 @@ auth_bp = Blueprint("auth", __name__)
 @auth_bp.route("/")
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for("auth.home"))
+        return getAuthorizedRoute()
     return redirect(url_for("auth.login"))
 
+# home routes
 
 @auth_bp.route("/home")
 @login_required
@@ -30,10 +31,67 @@ def home():
     return render_template("home.html")
 
 
+@auth_bp.route("/visitor")
+@login_required
+def visitor():
+    """Visitor Home"""
+    return render_template("visitor.html")
+
+@auth_bp.route("/junior")
+@login_required
+def junior():
+    """Junior Home"""
+    return render_template("junior.html")
+
+@auth_bp.route("/midlevel")
+@login_required
+def midlevel():
+    """Mid Home"""
+    return render_template("midlevel.html")
+
+@auth_bp.route("/senior")
+@login_required
+def senior():
+    """Senior Home"""
+    return render_template("senior.html")
+
+
+@auth_bp.route("/admin")
+@login_required
+def admin():
+    if current_user.permissions != "admin":
+        abort(403)
+
+    satellites = Satellite.query.all()
+    
+    
+    return render_template("admin.html")
+
+
+# commands
+
+def getAuthorizedRoute():
+
+    if current_user.permissions == "visitor":
+        return redirect(url_for("auth.visitor"))
+    
+    elif current_user.permissions == "junior":
+        return redirect(url_for("auth.junior"))
+    
+    elif current_user.permissions == "midlevel":
+        return redirect(url_for("auth.midlevel"))
+    
+    elif current_user.permissions == "senior":
+            return redirect(url_for("auth.senior"))
+    
+    elif current_user.permissions == "admin":
+            return redirect(url_for("auth.admin"))
+
+
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for("auth.home"))
+        return getAuthorizedRoute()
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -57,7 +115,8 @@ def login():
                 actor_user_id=user.id
             )
             flash(f"Logged in as {user.display_name or user.username}.", "success")
-            return redirect(url_for("auth.home"))
+            return getAuthorizedRoute()
+
 
         record_audit_event(
             event_type = "login",

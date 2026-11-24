@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title_extra %} — Home{% endblock %}
+
+{% block content %}
+
+<script>
+    function openTab(evt, tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(tabId).style.display = 'block';
+        evt.currentTarget.classList.add('active');
+    }
+</script>
+
+<script>
+    function sendGet(evt, url, tabId) {
+        fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log("RETURNED DATA: ", data)
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).style.display = 'block';
+
+            let tabIdData = tabId + "_data";
+            document.getElementById(tabIdData).replaceChildren(); 
+
+            for (let d of data) {
+                let newItem = document.createElement('li');
+                newItem.textContent = d;
+                document.getElementById(tabIdData).append(newItem); 
+            }
+        })
+        .catch(error => console.error("ERROR: ", error))
+    };
+</script>
+
+<div class="page-header">
+    <h4>ADMIN</h4>
+    <p>Abilities include:</p>
+    <ul>
+        <li>List of satellites and their info</li>
+        <li>List of ground stations</li>
+        <li>Access to telemetry from satellites</li>
+        <li>Ability to view subscribers</li>
+        <li>Ability to view LegacyAccessLog</li>
+        <li>Ability to see, add, and remove users</li>
+        <li>Ability to grant users permissions</li>
+    </ul>
+</div>
+
+<div class="abilities-box">
+    <h4>Commands:</h4>
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="sendGet(event, 'display_satellites_command', 'tab1')">Display Satellites</button>
+        <button class="tab-btn active" onclick="sendGet(event, 'display_ground_stations_command', 'tab2')">Display Ground Stations</button>
+        <button class="tab-btn active" onclick="sendGet(event, 'display_telemetry_command', 'tab3')">Display Telemetry</button>
+        <button class="tab-btn active" onclick="sendGet(event, 'display_subscribers_command', 'tab4')">Display Subscribers</button>
+        <button class="tab-btn active" onclick="sendGet(event, 'display_users_command', 'tab5')">Display Current Users</button>
+        <button class="tab-btn active" onclick="sendGet(event, 'display_LegacyAccessLog_command', 'tab6')">Display Legacy Access Log</button>
+        <button class="tab-btn active" onclick="sendGet(event, 'display_AuditEvents_command', 'tab7')">Display Audit Events</button>
+        <button class="tab-btn active" onclick="openTab(event, 'tab8')">Add User</button>
+        <button class="tab-btn active" onclick="openTab(event, 'tab9')">Remove User</button>
+        <button class="tab-btn active" onclick="openTab(event, 'tab10')">Assign User Permissions</button>
+    </div>
+</div>
+
+<div class="command_tabs">
+    <div id="tab1" class="tab-content" style="display: none;">
+        <ul id="tab1_data"></ul>
+    </div>
+
+    <div id="tab2" class="tab-content" style="display: none;">
+        <ul id="tab2_data"></ul>
+    </div>
+
+    <div id="tab3" class="tab-content" style="display: none;">
+        <ul id="tab3_data"></ul>
+    </div>
+
+    <div id="tab4" class="tab-content" style="display: none;">
+        <ul id="tab4_data"></ul>
+    </div>
+
+    <div id="tab5" class="tab-content" style="display: none;">
+        <ul id="tab5_data"></ul>
+    </div>
+
+    <div id="tab6" class="tab-content" style="display: none;">
+        <ul id="tab6_data"></ul>
+    </div>
+
+    <div id="tab7" class="tab-content" style="display: none;">
+        <ul id="tab7_data"></ul>
+    </div>
+
+    <div id="tab8" class="tab-content" style="display: block;">
+        <form action="{{ url_for('commands.add_user_command')}}" method="POST">
+            <p>
+                <label for="username">Username: </label>
+                <input type="text" id="username" name="username" required>
+            </p>
+            <p>
+                <label for="password">Password: </label>
+                <input type="text" id="password" name="password" required>
+            </p>
+            <p>
+                <label for="display_name">Display Name: </label>
+                <input type="text" id="display_name" name="display_name" required>
+            </p>
+            <p>
+                <label for="job_title">Job Title: </label>
+                <input type="text" id="job_title" name="job_title" required>
+            </p>
+            <p>
+                <label for="permissions">Permission Level: </label>
+                <select name="permissions" id="permissions" required>
+                    <option value="visitor">Visitor</option>
+                    <option value="junior">Junior Operator</option>
+                    <option value="midlevel">Operator</option>
+                    <option value="senior">Senior Operator</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </p>
+            <button type="submit">Add New User</button>
+        </form>
+    </div>
+
+    <div id="tab9" class="tab-content" style="display: none;">
+        <form action="{{ url_for('commands.remove_user_command')}}" method="POST">
+            <p>
+                <label for="username">Username: </label>
+                <input type="text" id="username" name="username" required>
+            </p>
+            <button type="submit">Remove User</button>
+        </form>
+    </div>
+
+    <div id="tab10" class="tab-content" style="display: none;">
+        <form action="{{ url_for('commands.assign_user_permissions_command')}}" method="POST">
+            <p>
+                <label for="username">Username: </label>
+                <input type="text" id="username" name="username" required>
+            </p>
+            <p>
+                <label for="permissions">Permission Level: </label>
+                <select name="permissions" id="permissions" required>
+                    <option value="visitor">Visitor</option>
+                    <option value="junior">Junior Operator</option>
+                    <option value="midlevel">Operator</option>
+                    <option value="senior">Senior Operator</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </p>
+            <button type="submit">Assign User Permission Level</button>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

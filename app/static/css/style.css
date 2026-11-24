@@ -321,3 +321,22 @@ tr:last-child td { border-bottom: none; }
     nav { padding: 0 16px; gap: 16px; }
     main { padding: 24px 16px; }
 }
+
+/* added this from midlevel.css originally */
+.command_tabs {
+    background-color: white;
+    color: black;
+    padding: 2vw 2vw;
+    margin: 1vw 1vw;
+    border-radius: 5px;
+}
+
+.command_tabs input {
+    background-color: white;
+    color: black;
+}
+
+.command_tabs select {
+    background-color: white;
+    color: black;
+}

@@ -31,16 +31,16 @@ def seed():
 
         # ---------------- USERS ----------------
         accounts = [
-            # username, password, name, job title, employment status
-            ("admin", "spaceadmin123", "Alex Rivera", "Head of Operations", "employed"),
-            ("jchen", "operator123", "Jordan Chen", "Senior Operator", "employed"),
-            ("mkowalski", "operator123", "Morgan Kowalski", "Operator", "employed"),
-            ("intern22", "intern12345", "Casey Park", "Intern", "employed"),
-            ("tgarcia", "operator123", "Taylor Garcia", "Operator", "left"),  # left 3 weeks ago
+            # username, password, name, job title, permissions, employment status
+            ("admin", "spaceadmin123", "Alex Rivera", "Head of Operations", "admin", "employed"),
+            ("jchen", "operator123", "Jordan Chen", "Senior Operator", "senior", "employed"),
+            ("mkowalski", "operator123", "Morgan Kowalski", "Operator", "midlevel", "employed"),
+            ("intern22", "intern12345", "Casey Park", "Intern", "junior", "employed"),
+            ("tgarcia", "operator123", "Taylor Garcia", "Operator", "visitor", "left"),  # left 3 weeks ago
         ]
         users = {}
-        for username, pw, name, title, status in accounts:
-            u = User(username=username, display_name=name, job_title=title, employment_status=status)
+        for username, pw, name, title, permission, status in accounts:
+            u = User(username=username, display_name=name, job_title=title, permissions=permission, employment_status=status)
             u.set_password(pw)
             db.session.add(u)
             users[username] = u
@@ -205,7 +205,7 @@ def seed():
 
         print("Database seeded!\n")
         print("Accounts:")
-        for username, pw, name, title, status in accounts:
+        for username, pw, name, title, permission, status in accounts:
             note = "  <- LEFT THE COMPANY, still has access" if status == "left" else ""
             print(f"  {username:<10} / {pw:<14} {title}{note}")
         print(f"\n  {len(sats)} satellites, {len(stations)} ground stations, {telemetry_count} telemetry readings")

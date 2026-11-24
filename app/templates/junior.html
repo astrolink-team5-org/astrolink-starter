@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title_extra %} — Home{% endblock %}
+
+{% block content %}
+
+<script>
+    function openTab(evt, tabId) {
+        document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+        document.getElementById(tabId).style.display = 'block';
+        evt.currentTarget.classList.add('active');
+    }
+</script>
+
+<script>
+    function sendGet(evt, url, tabId) {
+        fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            console.log("RETURNED DATA: ", data)
+            document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabId).style.display = 'block';
+
+            let tabIdData = tabId + "_data";
+            document.getElementById(tabIdData).replaceChildren(); 
+
+            for (let d of data) {
+                let newItem = document.createElement('li');
+                newItem.textContent = d;
+                document.getElementById(tabIdData).append(newItem); 
+            }
+        })
+        .catch(error => console.error("ERROR: ", error))
+    };
+</script>
+
+<div class="page-header">
+    <h4>JUNIOR</h4>
+    <p>Abilities include:</p>
+    <ul>
+        <li>List of satellites and their info</li>
+        <li>List of ground stations</li>
+        <li>Ability to PING satellites</li>
+    </ul>
+</div>
+
+<div class="abilities-box">
+    <h4>Commands:</h4>
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="sendGet(event, 'display_satellites_command', 'tab1')">Display Satellites</button>
+        <button class="tab-btn active" onclick="sendGet(event, 'display_ground_stations_command', 'tab2')">Display Ground Stations</button>
+        <button class="tab-btn active" onclick="openTab(event, 'tab3')">Ping Satellites</button>
+    </div>
+</div>
+
+<div class="command_tabs">
+
+    <div id="tab1" class="tab-content" style="display: none;">
+        <ul id="tab1_data"></ul>
+    </div>
+
+    <div id="tab2" class="tab-content" style="display: none;">
+        <ul id="tab2_data"></ul>
+    </div>
+
+    <div id="tab3" class="tab-content" style="display: block;">
+        <form action="{{ url_for('commands.ping_command')}}" method="POST">
+            <p>
+                <label for="satellite">Satellite: </label>
+                <input type="text" id="satellite" name="satellite" required>
+            </p>
+            <button type="submit">Send the ping</button>
+        </form>
+    </div>
+
+</div>
+{% endblock %}
